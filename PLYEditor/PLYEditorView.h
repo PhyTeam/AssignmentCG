@@ -23,6 +23,7 @@ protected: // create from serialization only
 
 // Attributes
 	HGLRC m_hRC;
+	HDC hdc;
 	bool bhit = false;
 public:
 	CPLYEditorDoc* GetDocument() const;
@@ -64,6 +65,7 @@ public:
 	float	cur_trans_x = 0, cur_trans_y = 0, cur_trans_z = 0;
 	float	xselect = 0, yselect = 0;
 	bool selectedMode = false;
+	static bool isCreateOpenGL;
 // Overrides
 public:
 	virtual void OnDraw(CDC* pDC);  // overridden to draw this view

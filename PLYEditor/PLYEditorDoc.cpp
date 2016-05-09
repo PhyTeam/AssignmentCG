@@ -32,7 +32,7 @@
 IMPLEMENT_DYNCREATE(CPLYEditorDoc, CDocument)
 
 BEGIN_MESSAGE_MAP(CPLYEditorDoc, CDocument)
-	ON_COMMAND(ID_FILE_OPEN, &CPLYEditorDoc::OnFileOpen)
+	//ON_COMMAND(ID_FILE_OPEN, &CPLYEditorDoc::OnFileOpen)
 END_MESSAGE_MAP()
 
 
@@ -73,6 +73,16 @@ void CPLYEditorDoc::Serialize(CArchive& ar)
 	else
 	{
 		// TODO: add loading code here
+		CFile* cfile = ar.GetFile();
+		
+		CString filename = cfile->GetFilePath(); // return full path and filename
+									  //::MessageBox(0, filename, L"Hello", MB_OK);
+		char fn[200];
+		strcpy(fn, CStringA(filename).GetString());
+		Mesh* m = readFile(fn);
+		theApp.AddToRecentFileList(filename.GetString());
+		this->LMesh.push_back(m);
+		this->UpdateAllViews(NULL);
 	}
 }
 

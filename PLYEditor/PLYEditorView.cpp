@@ -89,6 +89,8 @@ BOOL CPLYEditorView::PreCreateWindow(CREATESTRUCT& cs)
 	return CView::PreCreateWindow(cs);
 }
 
+bool CPLYEditorView::isCreateOpenGL = false;
+
 // CPLYEditorView drawing
 
 void CPLYEditorView::OnDraw(CDC* /*pDC*/)
@@ -130,6 +132,9 @@ void CPLYEditorView::SetupOpenGL(void)
 	// Create the OpenGL Rendering Context.
 	m_hRC = wglCreateContext(hdc);
 	wglMakeCurrent(hdc, m_hRC);
+	this->hdc = hdc;
+
+
 	glShadeModel(GL_SMOOTH);
 	glClearColor(0.0f, 0.1f, 0.0f, 0.5f);
 	glClearDepth(1.0f);
@@ -342,7 +347,7 @@ void CPLYEditorView::OnPaint()
 	CPaintDC dc(this); // device context for painting
 					   // TODO: Add your message handler code here
 					   // Do not call CView::OnPaint() for painting messages
-
+	wglMakeCurrent(hdc, m_hRC);
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
