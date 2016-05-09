@@ -13,7 +13,7 @@
 //
 
 #pragma once
-
+#include <ctime>
 
 class CPLYEditorView : public CView
 {
@@ -21,10 +21,13 @@ protected: // create from serialization only
 	CPLYEditorView();
 	DECLARE_DYNCREATE(CPLYEditorView)
 
-// Attributes
+	// Attributes
 	HGLRC m_hRC;
 	HDC hdc;
 	bool bhit = false;
+	unsigned int current_item;
+	Mesh* selected_mesh = NULL;
+	std::clock_t oc;
 public:
 	CPLYEditorDoc* GetDocument() const;
 
@@ -36,7 +39,9 @@ public:
 
 	void processHits(GLint hits, GLuint buffer[]);
 
-// Operations
+	BOOL OnEraseBkgnd(CDC * pDC);
+
+	// Operations
 public:
 	float aspect;
 	/* Camera variables */
@@ -66,7 +71,7 @@ public:
 	float	xselect = 0, yselect = 0;
 	bool selectedMode = false;
 	static bool isCreateOpenGL;
-// Overrides
+	// Overrides
 public:
 	virtual void OnDraw(CDC* pDC);  // overridden to draw this view
 	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
@@ -83,7 +88,7 @@ protected:
 	virtual void OnPaint();
 	virtual void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
 	virtual BOOL OnMouseWheel(UINT nFlags, short zDelta, CPoint pt);
-// Implementation
+	// Implementation
 public:
 	virtual ~CPLYEditorView();
 	int OnCreate(LPCREATESTRUCT lpCreateStruct);
@@ -96,7 +101,7 @@ protected:
 	void SetupOpenGL(void);
 	void init();
 	void initLight();
-// Generated message map functions
+	// Generated message map functions
 protected:
 	afx_msg
 		void initLight2();
@@ -104,10 +109,15 @@ protected:
 	afx_msg void OnRButtonUp(UINT nFlags, CPoint point);
 	afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
 	DECLARE_MESSAGE_MAP()
+public:
+	afx_msg void OnCheck2();
+	afx_msg void OnUpdateCheck2(CCmdUI *pCmdUI);
 };
 
 #ifndef _DEBUG  // debug version in PLYEditorView.cpp
 inline CPLYEditorDoc* CPLYEditorView::GetDocument() const
-   { return reinterpret_cast<CPLYEditorDoc*>(m_pDocument); }
+{
+	return reinterpret_cast<CPLYEditorDoc*>(m_pDocument);
+}
 #endif
 

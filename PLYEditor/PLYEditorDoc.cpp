@@ -33,6 +33,7 @@ IMPLEMENT_DYNCREATE(CPLYEditorDoc, CDocument)
 
 BEGIN_MESSAGE_MAP(CPLYEditorDoc, CDocument)
 	//ON_COMMAND(ID_FILE_OPEN, &CPLYEditorDoc::OnFileOpen)
+	ON_COMMAND(ID_BUTTON2, &CPLYEditorDoc::OnButton2)
 END_MESSAGE_MAP()
 
 
@@ -177,3 +178,27 @@ void CPLYEditorDoc::OnFileOpen()
 
 
 // CPLYEditorDoc commands
+
+
+void CPLYEditorDoc::OnButton2()
+{
+	// TODO: Add your command handler code here
+	CFileDialog dlg(TRUE);
+	//dlg.m_ofn.nMaxFile = 1;
+	dlg.m_ofn.lpstrFilter = L"Ply Files (*.ply)\0*.ply\0";
+	dlg.m_ofn.lpstrTitle = L"Open PLY File As";
+
+	CString filename;
+
+	if (dlg.DoModal() == IDOK)
+	{
+		filename = dlg.GetPathName(); // return full path and filename
+									  //::MessageBox(0, filename, L"Hello", MB_OK);
+		char fn[200];
+		strcpy(fn, CStringA(filename).GetString());
+		Mesh* m = readFile(fn);
+		theApp.AddToRecentFileList(filename.GetString());
+		this->LMesh.push_back(m);
+		this->UpdateAllViews(NULL);
+	}
+}

@@ -13,6 +13,7 @@
 //
 
 #include "stdafx.h"
+#include <ctime>
 // SHARED_HANDLERS can be defined in an ATL project implementing preview, thumbnail
 // and search filter handlers and allows sharing of document code with that project.
 #ifndef SHARED_HANDLERS
@@ -50,6 +51,9 @@ BEGIN_MESSAGE_MAP(CPLYEditorView, CView)
 	ON_WM_MOUSEWHEEL()
 	ON_WM_RBUTTONDOWN()
 	ON_WM_RBUTTONUP()
+	ON_WM_ERASEBKGND()
+	ON_COMMAND(ID_CHECK2, &CPLYEditorView::OnCheck2)
+	ON_UPDATE_COMMAND_UI(ID_CHECK2, &CPLYEditorView::OnUpdateCheck2)
 END_MESSAGE_MAP()
 
 // CPLYEditorView construction/destruction
@@ -289,15 +293,34 @@ void CPLYEditorView::OnRButtonDown(UINT flags, CPoint loc) {
 	//glScaled(0.05, 0.05, 0.05);
 	//glTranslatef(object3d->slideX, object3d->slideY, object3d->slideZ);
 	glTranslatef(object3d->origin[0], object3d->origin[1], object3d->origin[2]);
+
 	glLoadName(1);
-	
+
 	object3d->Draw2();
 
 	glPopMatrix();
 	//glFlush();
 
+	//auto document = this->GetDocument();
+	//int count = 1;
+	//for (auto const& i : document->LMesh) {
+
+	//	glLoadName(count++);
+	//	glMatrixMode(GL_MODELVIEW);
+	//	glPushMatrix();
+	//	glTranslated(i->position.x, i->position.y, i->position.z);
+
+	//	glTranslatef(i->origin[0], i->origin[1], i->origin[2]);
+
+	//	i->Draw2();
+
+	//	glPopMatrix();
+	//}
+
 	hits = glRenderMode(GL_RENDER);
 	processHits(hits, selectBuf);
+
+	Invalidate();
 }
 
 void CPLYEditorView::OnMouseMove(UINT flags, CPoint loc)
@@ -364,23 +387,36 @@ void CPLYEditorView::OnPaint()
 	glRotatef(30.0, 1, 0.5, 0);
 	drawAxis();
 	glMultMatrixf(matrix);
-	
+
 	glMatrixMode(GL_MODELVIEW);
 
-	
+
 
 	auto document = this->GetDocument();
 	int count = 1;
 	for (auto const& i : document->LMesh) {
+
 		glLoadName(count++);
+		glMatrixMode(GL_MODELVIEW);
+		glPushMatrix();
+		//glTranslated(i->position.x, i->position.y, i->position.z);
+
 		glTranslatef(i->origin[0], i->origin[1], i->origin[2]);
-		i->Draw2();
+
+		if (bWireFrame)
+			i->DrawWireframe();
+		else
+		{
+			i->Draw2();
+		}
+
+		glPopMatrix();
 	}
 
 	//glutSolidTeapot(200.0);
-
+	glFlush();
 	SwapBuffers(dc.m_ps.hdc);
-	Invalidate(false);
+	Invalidate();
 }
 
 void CPLYEditorView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
@@ -517,15 +553,14 @@ void CPLYEditorView::mouseMotion(int x, int y)
 
 		previousX = x;
 		previousY = y;
-		Invalidate(false);
-		
-		this->RedrawWindow(0, 0, RDW_INVALIDATE);
+
+		Invalidate();
 	}
 }
 
 void CPLYEditorView::mouseSelectionMode(int x, int y) {
 	float PI = 3.1415926535898f;
-	if (bhit) {// selected mode -> translate
+	if (bhit && isRightButtonPressed) {// selected mode -> translate
 		float xdiff = previousX - x;
 		float ydiff = previousY - y;
 		previousX = x;
@@ -543,21 +578,32 @@ void CPLYEditorView::mouseSelectionMode(int x, int y) {
 		float fovy1 = 45.0 / 180.0* PI;	// near
 										// reset translate vector
 										//object3d->slideX = cur_trans_x + 2 * xdiff*tan(fovy1 / 2) / screenHeight*sqrt(OE.dot(OE)) *left.x + 2 * ydiff*tan(fovy1 / 2) / screenHeight*sqrt(OE.dot(OE))*wup.x;
-										//object3d->slideY = cur_trans_y + 2 * xdiff*tan(fovy1 / 2) / screenHeight*sqrt(OE.dot(OE)) *left.x + 2 * ydiff*tan(fovy1 / 2) / screenHeight*sqrt(OE.dot(OE))*wup.y;
+										///object3d->slideY = cur_trans_y + 2 * xdiff*tan(fovy1 / 2) / screenHeight*sqrt(OE.dot(OE)) *left.x + 2 * ydiff*tan(fovy1 / 2) / screenHeight*sqrt(OE.dot(OE))*wup.y;
 										//object3d->slideZ = cur_trans_z + 2 * xdiff*tan(fovy1 / 2) / screenHeight*sqrt(OE.dot(OE)) *left.x + 2 * ydiff*tan(fovy1 / 2) / screenHeight*sqrt(OE.dot(OE))*wup.z;
 		glMatrixMode(GL_MODELVIEW);
 		glPushMatrix();
 		glLoadIdentity();
-		//glRotatef(angle * 1.5f, axis[0], axis[1], axis[2]);
+		glRotatef(angle * 1.5f, axis[0], axis[1], axis[2]);
+
+		/*float ox = selected_mesh->position.x;
+		float oy = selected_mesh->position.y;
+		float oz = selected_mesh->position.z;
+		selected_mesh->position.set(
+		ox + xdiff*left.x*1.3 + ydiff*wup.x*1.3,
+		oy + xdiff*left.y*1.3 + ydiff*wup.y*1.3,
+		oz + xdiff*left.z*1.3 + ydiff*wup.z*1.3
+		);*/
+
 		glTranslatef(xdiff*left.x*1.3 + ydiff*wup.x*1.3, xdiff*left.y*1.3 + ydiff*wup.y*1.3, xdiff*left.z*1.3 + ydiff*wup.z*1.3);
 		glMultMatrixf(matrix);
 		glGetFloatv(GL_MODELVIEW_MATRIX, (GLfloat*)matrix);
 		glPopMatrix();
 
 		init();
-		
+		Invalidate();
+
 	}
-	RedrawWindow(0,0, RDW_INVALIDATE);
+
 }
 
 void CPLYEditorView::processHits(GLint hits, GLuint buffer[])
@@ -583,6 +629,21 @@ void CPLYEditorView::processHits(GLint hits, GLuint buffer[])
 	}
 	printf("\n");
 	}*/
+	GLuint* bufp = buffer;
+	GLuint numnames;
+	GLuint hitnames[10];
+	int hi = 0;
+	for (unsigned int j = 0; j < hits; j++) {
+
+		numnames = *bufp++;
+		z1 = *bufp++;
+		z2 = *bufp++;
+		while (numnames--) {
+			name = *bufp++;
+			hitnames[hi++] = name;
+			current_item = name;
+		}
+	}
 
 	if (hits > 0) {
 		bhit = true;
@@ -590,6 +651,16 @@ void CPLYEditorView::processHits(GLint hits, GLuint buffer[])
 
 	}
 
+	/*auto doc = GetDocument();
+	auto ls_mesh = doc->LMesh;
+	selected_mesh = ls_mesh[current_item];
+	*/
+}
+
+BOOL CPLYEditorView::OnEraseBkgnd(CDC* pDC)
+{
+	return 1;//Prevent flicker
+			 //return CView::OnEraseBkgnd(pDC);
 }
 // CPLYEditorView diagnostics
 
@@ -616,3 +687,18 @@ CPLYEditorDoc* CPLYEditorView::GetDocument() const // non-debug version is inlin
 
 
 // CPLYEditorView message handlers
+
+
+void CPLYEditorView::OnCheck2()
+{
+	// TODO: Add your command handler code here
+	bWireFrame = !bWireFrame;
+}
+
+
+
+void CPLYEditorView::OnUpdateCheck2(CCmdUI *pCmdUI)
+{
+	// TODO: Add your command update UI handler code here
+
+}

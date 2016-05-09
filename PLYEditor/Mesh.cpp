@@ -30,6 +30,7 @@ void Mesh::DrawWireframe()
 		}
 		glEnd();
 	}
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 }
 
 // Draw color with light
