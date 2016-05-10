@@ -31,6 +31,8 @@ protected: // create from serialization only
 public:
 	CPLYEditorDoc* GetDocument() const;
 
+	void drawString(const char * str, int x, int y, float color[4], void * font);
+
 	void mouse(int button, int state, int x, int y);
 
 	void mouseMotion(int x, int y);
@@ -50,7 +52,8 @@ public:
 	float camera_dis;
 	float camera_X, camera_Y, camera_Z;
 	float lookAt_X, lookAt_Y, lookAt_Z;
-
+	bool enableLighting = false;
+	void *font = GLUT_BITMAP_8_BY_13;
 	float matrix[16];
 	float axis[3];
 	float angle = 0.0;
@@ -112,6 +115,7 @@ protected:
 public:
 	afx_msg void OnCheck2();
 	afx_msg void OnUpdateCheck2(CCmdUI *pCmdUI);
+	afx_msg void OnCheck3();
 };
 
 #ifndef _DEBUG  // debug version in PLYEditorView.cpp
